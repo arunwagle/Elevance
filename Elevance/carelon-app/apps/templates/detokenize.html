@@ -1,0 +1,19 @@
+{% extends "layout.html" %}
+{% block title %}Detokenize{% endblock %}
+{% block content %}
+<div class="page-header"><h2>Detokenize File</h2></div>
+<form method="POST" enctype="multipart/form-data" id="detokenize-form">
+    <div class="form-group">
+        <label>File to Detokenize *</label>
+        <input type="text" name="file_path" class="form-input" placeholder="Enter Volume file path" value="{{ request.args.get('file', '') }}">
+    </div>
+    <div class="form-group">
+        <label>Protegrity Template *</label>
+        <input type="file" name="protegrity_template" accept=".json" required>
+    </div>
+    <div class="alert alert-warning">⚠️ Detokenized data is streamed for download only. It is never stored on the server.</div>
+    <div class="form-actions">
+        <button type="submit" class="btn-primary">🔓 Detokenize &amp; Download</button>
+    </div>
+</form>
+{% endblock %}

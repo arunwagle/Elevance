@@ -1,0 +1,8 @@
+{
+  "file_type": "csv",
+  "is_delimited": true,
+  "delimiter": ",",
+  "has_header": true,
+  "sheet_name": null,
+  "pii_columns": ["ssn", "email", "phone_number", "credit_card"]
+}
