@@ -1,0 +1,27 @@
+{% extends "layout.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block content %}
+<div class="page-header"><h2>Administration</h2></div>
+<div class="admin-tiles">
+    <a href="{{ url_for('admin.permissions_page') }}" class="admin-tile">
+        <div class="tile-icon">🔑</div>
+        <div class="tile-title">Permissions Management</div>
+        <div class="tile-desc">Manage group permissions and access control matrix</div>
+    </a>
+    <a href="{{ url_for('admin.jobs_page') }}" class="admin-tile">
+        <div class="tile-icon">⚡</div>
+        <div class="tile-title">Manage Databricks Jobs</div>
+        <div class="tile-desc">View, manage, and create Databricks Jobs using REST APIs</div>
+    </a>
+    <a href="{{ url_for('admin.abac_policies_page') }}" class="admin-tile">
+        <div class="tile-icon">🛡️</div>
+        <div class="tile-title">Setup ABAC Policies</div>
+        <div class="tile-desc">Configure Attribute-Based Access Control policies</div>
+    </a>
+    <a href="{{ url_for('admin.clusters_page') }}" class="admin-tile">
+        <div class="tile-icon">🖥️</div>
+        <div class="tile-title">Create Job Clusters</div>
+        <div class="tile-desc">Provision Job Clusters using REST APIs</div>
+    </a>
+</div>
+{% endblock %}

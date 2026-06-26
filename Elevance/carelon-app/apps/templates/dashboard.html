@@ -1,0 +1,40 @@
+{% extends "layout.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-welcome">
+    <h1>Welcome to Carelon Dx Utility</h1>
+    <p class="welcome-subtitle">Data Tokenization & PII Protection Platform</p>
+
+    <div class="welcome-user-info">
+        <p>Logged in as: <strong>{{ email }}</strong></p>
+        <p>Role: <strong>{{ groups|join(', ') }}</strong></p>
+    </div>
+
+    <div class="dashboard-cards">
+        {% if 'upload' in permissions %}
+        <a href="{{ url_for('upload.upload_form') }}" class="dashboard-card">
+            <div class="card-icon">📤</div>
+            <div class="card-title">Upload & Tokenize</div>
+            <div class="card-desc">Upload data files and apply PII tokenization templates</div>
+        </a>
+        {% endif %}
+
+        {% if 'browse' in permissions %}
+        <a href="{{ url_for('file_ops.file_explorer') }}" class="dashboard-card">
+            <div class="card-icon">📁</div>
+            <div class="card-title">File Explorer</div>
+            <div class="card-desc">Browse and manage files in your permitted folders</div>
+        </a>
+        {% endif %}
+
+        {% if session.get('is_admin') or 'admin' in session.get('groups', []) %}
+        <a href="{{ url_for('admin.admin_dashboard') }}" class="dashboard-card">
+            <div class="card-icon">⚙️</div>
+            <div class="card-title">Admin</div>
+            <div class="card-desc">Manage permissions and view audit logs</div>
+        </a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

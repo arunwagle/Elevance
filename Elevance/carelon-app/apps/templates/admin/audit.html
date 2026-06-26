@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+{% block title %}Audit Log{% endblock %}
+{% block content %}
+<div class="page-header"><h2>Audit Log</h2></div>
+<table class="data-table">
+    <thead>
+        <tr><th>Timestamp</th><th>User</th><th>Action</th><th>Resource</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+        {% for event in events %}
+        <tr>
+            <td>{{ event.timestamp }}</td>
+            <td>{{ event.user }}</td>
+            <td>{{ event.action }}</td>
+            <td>{{ event.resource }}</td>
+            <td class="{% if event.status == 'success' %}text-success{% else %}text-danger{% endif %}">{{ event.status }}</td>
+        </tr>
+        {% endfor %}
+        {% if not events %}
+        <tr><td colspan="5" class="empty-state">No audit events recorded.</td></tr>
+        {% endif %}
+    </tbody>
+</table>
+{% endblock %}

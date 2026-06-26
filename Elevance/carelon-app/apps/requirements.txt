@@ -1,0 +1,9 @@
+flask>=3.0.0
+gunicorn>=21.2.0
+pandas>=2.1.0
+openpyxl>=3.1.0
+requests>=2.31.0
+databricks-sdk>=0.72.0
+python-dotenv>=1.0.0
+werkzeug>=3.0.0
+flask-wtf>=1.2.0

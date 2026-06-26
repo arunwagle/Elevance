@@ -1,0 +1,35 @@
+bundle:
+  name: carelon_app_bundle
+
+resources:
+  apps:
+    carelon_app:
+      name: 'carelon-app'
+      source_code_path: ./apps
+      description: 'Carelon Data Tokenization App — PII protection using Protegrity REST APIs'
+
+      # OAuth scopes for on-behalf-of user authorization (files only)
+      # Volume operations use the user's token with 'files' scope.
+      # Jobs/Clusters admin ops use the app's service principal token
+      # (no 'jobs' scope available in Public Preview user auth).
+      user_api_scopes:
+        - 'files'
+
+      permissions:
+        - level: CAN_USE
+          group_name: users
+
+targets:
+  dev:
+    mode: development
+    default: true
+    workspace:
+      host: https://fevm-aw-serverless-stable.cloud.databricks.com
+  prod:
+    mode: production
+    workspace:
+      host: https://fevm-aw-serverless-stable.cloud.databricks.com
+      root_path: /Workspace/Users/arun.wagle@databricks.com/.bundle/${bundle.name}/${bundle.target}
+    permissions:
+      - user_name: arun.wagle@databricks.com
+        level: CAN_MANAGE

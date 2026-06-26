@@ -1,0 +1,272 @@
+{% extends "layout.html" %}
+{% block title %}Upload & Tokenize{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div class="tab-bar">
+        <a class="tab active">Tokenized File Upload</a>
+        <a class="tab">Template Design Editor</a>
+    </div>
+</div>
+
+<!-- Step Progress Indicator (5 steps) -->
+<div class="wizard-progress">
+    <div class="wizard-step active" data-step="1">
+        <span class="step-number">1</span>
+        <span class="step-label">Data File</span>
+    </div>
+    <div class="wizard-connector"></div>
+    <div class="wizard-step" data-step="2">
+        <span class="step-number">2</span>
+        <span class="step-label">Processing Template</span>
+    </div>
+    <div class="wizard-connector"></div>
+    <div class="wizard-step" data-step="3">
+        <span class="step-number">3</span>
+        <span class="step-label">Parsed Preview</span>
+    </div>
+    <div class="wizard-connector"></div>
+    <div class="wizard-step" data-step="4">
+        <span class="step-number">4</span>
+        <span class="step-label">Protegrity Template</span>
+    </div>
+    <div class="wizard-connector"></div>
+    <div class="wizard-step" data-step="5">
+        <span class="step-number">5</span>
+        <span class="step-label">Target Folder</span>
+    </div>
+</div>
+
+<form id="upload-form" enctype="multipart/form-data" onsubmit="return false;">
+
+    <!-- ===== STEP 1: Select Data File (no preview) ===== -->
+    <div class="wizard-panel active" id="step-1">
+        <h3>Step 1: Select Data File</h3>
+        <p class="step-desc">Choose the data file to upload and tokenize.</p>
+
+        <div class="form-row">
+            <div class="form-group" style="flex: 1;">
+                <label>Data File *</label>
+                <div class="file-drop-zone" id="drop-zone-data">
+                    <input type="file" id="data-file-input" name="data_file" accept=".csv,.tsv,.xlsx,.xls,.txt,.dat" required>
+                    <div class="drop-zone-prompt">
+                        <span class="drop-icon">+</span>
+                        <span>Drag and drop file here or <strong>click to browse</strong></span>
+                        <span class="drop-hint">Supported: CSV, TSV, Excel, TXT, DAT</span>
+                    </div>
+                    <div class="drop-zone-selected hidden" id="data-file-info">
+                        <span class="file-name" id="data-file-name"></span>
+                        <span class="file-size" id="data-file-size"></span>
+                        <button type="button" class="btn-clear-file" id="btn-clear-data">x</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== STEP 2: Processing Template (from Volume) ===== -->
+    <div class="wizard-panel hidden" id="step-2">
+        <h3>Step 2: Select Processing Template</h3>
+        <p class="step-desc">Choose the template that defines how to parse and map columns. If it has multiple sheets, select the one that applies.</p>
+
+        <div class="upload-split-panel" id="proc-split-panel">
+            <aside class="usp-folders-panel">
+                <div class="usp-panel-header">
+                    <h4>Available Templates</h4>
+                    <button type="button" class="usp-refresh-btn" id="proc-refresh-templates" title="Refresh templates">&#8635;</button>
+                </div>
+                <div class="usp-folder-list-wrap">
+                    <div class="usp-folder-loading" id="proc-templates-loading">
+                        <span class="perm-spinner-inline"></span> Loading templates...
+                    </div>
+                    <ul class="usp-folder-list" id="proc-templates-list"></ul>
+                    <div class="usp-folder-empty hidden" id="proc-templates-empty">
+                        <span class="empty-icon">&#128196;</span>
+                        <p>No templates found.</p>
+                    </div>
+                </div>
+            </aside>
+            <section class="usp-summary-panel">
+                <!-- Sheet Selector -->
+                <div class="sheet-selector hidden" id="proc-sheet-selector">
+                    <div class="sheet-selector-header">
+                        <label>Select Sheet:</label>
+                        <span class="sheet-count" id="proc-sheet-count"></span>
+                    </div>
+                    <div class="sheet-tabs" id="proc-sheet-tabs"></div>
+                    <input type="hidden" id="proc-selected-sheet" name="processing_template_sheet" value="">
+                </div>
+
+                <!-- Template Sheet Preview -->
+                <div class="preview-section hidden" id="preview-template">
+                    <div class="preview-header">
+                        <h4>Template Preview</h4>
+                        <span class="preview-meta" id="template-preview-meta"></span>
+                    </div>
+                    <div class="preview-table-wrap">
+                        <table class="preview-table">
+                            <thead id="template-preview-thead"></thead>
+                            <tbody id="template-preview-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Empty state when no template selected -->
+                <div class="proc-select-hint" id="proc-select-hint">
+                    <span class="empty-icon">&#128196;</span>
+                    <p>Select a template from the list to preview its contents</p>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- ===== STEP 3: Parsed Data Preview with PHI Highlight ===== -->
+    <div class="wizard-panel hidden" id="step-3">
+        <h3>Step 3: Parsed Data Preview</h3>
+        <p class="step-desc">Data file parsed using the template’s Field Name / Start / End positions. <span class="phi-legend-inline"><span class="phi-dot"></span> Columns with PHI Type are highlighted.</span></p>
+
+        <!-- PHI Legend -->
+        <div class="phi-legend hidden" id="phi-legend">
+            <span class="phi-legend-item"><span class="phi-swatch phi-swatch-phi"></span> PHI Column</span>
+            <span class="phi-legend-item"><span class="phi-swatch phi-swatch-normal"></span> Non-PHI Column</span>
+            <span class="phi-legend-count" id="phi-count"></span>
+        </div>
+
+        <!-- Parsed Data Table -->
+        <div class="preview-section" id="preview-parsed-data">
+            <div class="preview-header">
+                <h4>Parsed Output</h4>
+                <span class="preview-meta" id="parsed-data-meta"></span>
+            </div>
+            <div class="preview-table-wrap parsed-data-table-wrap">
+                <table class="preview-table" id="parsed-data-table">
+                    <thead id="parsed-data-thead"></thead>
+                    <tbody id="parsed-data-tbody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== STEP 4: Protegrity Template (from Volume) ===== -->
+    <div class="wizard-panel hidden" id="step-4">
+        <h3>Step 4: Select Protegrity Template</h3>
+        <p class="step-desc">Select a tokenization template from the templates library.</p>
+
+        <div class="protegrity-picker">
+            <div class="protegrity-picker-header">
+                <span class="protegrity-picker-label">Available Templates</span>
+                <button type="button" class="usp-refresh-btn" id="protegrity-refresh" title="Refresh templates">&#8635;</button>
+            </div>
+            <div class="protegrity-picker-body">
+                <div class="protegrity-loading" id="protegrity-loading">
+                    <span class="perm-spinner-inline"></span> Loading templates...
+                </div>
+                <ul class="protegrity-template-list" id="protegrity-template-list"></ul>
+                <div class="protegrity-empty hidden" id="protegrity-empty">
+                    <p>No templates found in the library.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Template preview -->
+        <div class="json-viewer-container hidden" id="preview-tokenized"></div>
+    </div>
+
+    <!-- ===== STEP 5: Target Folder & Summary ===== -->
+    <div class="wizard-panel hidden" id="step-5">
+        <h3>Step 5: Select Target Folder</h3>
+        <p class="step-desc">Select a destination folder, then review the upload summary before submitting.</p>
+
+        <input type="hidden" id="volume-path-input" name="volume_path" value="">
+
+        <div class="upload-split-panel">
+            <!-- LEFT PANEL: Folder Selection -->
+            <aside class="usp-folders-panel">
+                <div class="usp-panel-header">
+                    <h4>Available Folders</h4>
+                    <button type="button" class="usp-refresh-btn" id="usp-refresh-folders" title="Refresh folders">&#8635;</button>
+                </div>
+
+                <div class="usp-folder-list-wrap">
+                    <div class="usp-folder-loading" id="permitted-folders-loading">
+                        <span class="perm-spinner-inline"></span> Loading folders...
+                    </div>
+                    <ul class="usp-folder-list" id="permitted-folders-list"></ul>
+                    <div class="usp-folder-empty hidden" id="permitted-folders-empty">
+                        <span class="empty-icon">&#128274;</span>
+                        <p>No upload folders available.</p>
+                        <p class="empty-hint">Contact admin for access.</p>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- RIGHT PANEL: Upload Summary -->
+            <section class="usp-summary-panel">
+                <div class="usp-panel-header">
+                    <h4>Upload Summary</h4>
+                </div>
+
+                <div class="usp-summary-body">
+                    <table class="summary-table">
+                        <tr>
+                            <td class="summary-label">Data File:</td>
+                            <td class="summary-value" id="summary-data-file">--</td>
+                        </tr>
+                        <tr>
+                            <td class="summary-label">Processing Template:</td>
+                            <td class="summary-value" id="summary-proc-template">--</td>
+                        </tr>
+                        <tr>
+                            <td class="summary-label">Selected Sheet:</td>
+                            <td class="summary-value" id="summary-proc-sheet">--</td>
+                        </tr>
+                        <tr>
+                            <td class="summary-label">PHI Columns:</td>
+                            <td class="summary-value" id="summary-phi-cols">--</td>
+                        </tr>
+                        <tr>
+                            <td class="summary-label">Protegrity Template:</td>
+                            <td class="summary-value" id="summary-protegrity-template">--</td>
+                        </tr>
+                        <tr class="summary-target-row">
+                            <td class="summary-label">Target Folder:</td>
+                            <td class="summary-value summary-target" id="summary-target-folder">
+                                <span class="target-placeholder">&#8592; Select a folder from the left panel</span>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <div class="usp-target-display hidden" id="usp-target-display">
+                        <span class="usp-target-icon">&#128193;</span>
+                        <span class="usp-target-path" id="usp-target-path"></span>
+                        <button type="button" class="usp-target-clear" id="usp-target-clear" title="Clear selection">&times;</button>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- Wizard Navigation -->
+    <div class="wizard-nav">
+        <button type="button" class="btn-outline" id="btn-prev" disabled>Previous</button>
+        <button type="button" class="btn-primary" id="btn-next">Next</button>
+        <button type="button" class="btn-primary hidden" id="btn-upload">Upload and Tokenize</button>
+    </div>
+</form>
+
+<div id="upload-progress" class="hidden">
+    <div class="progress-bar"><div class="progress-fill"></div></div>
+    <p id="progress-message">Processing...</p>
+</div>
+
+<div id="upload-results" class="hidden"></div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<script>
+    window.VOLUME_CONFIG = {
+        rootPath: "{{ default_volume_path }}",
+    };
+</script>
+<script src="{{ url_for('static', filename='js/upload.js') }}"></script>
+{% endblock %}
